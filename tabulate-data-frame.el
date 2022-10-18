@@ -89,15 +89,25 @@ list of data.frame names."
     (ess-command cmd)
     (buffer-to-list ess-command-buffer)))
 
+(defun get-df-col-length-cmd (df-name)
+  "Return a list of the column names of DF-NAME."
+  (let ((cmd (concat "c(apply(" df-name ", 2, function(x) max(nchar(x))), use.names = FALSE)")))
+    (ess-force-buffer-current)
+    (ess-command cmd)
+    (buffer-to-list ess-command-buffer)))
+
 (defun make-header (df-name)
   "Create the input to tabulated-list-format, the columns and
 spacing for the tabulated-list."
-  (let ((header (get-df-col-names-cmd df-name)))
+  (let ((header (get-df-col-names-cmd df-name))
+        (col-lengths (get-df-col-length-cmd df-name)))
     (vconcat
      (cl-loop for name being each element of header
-              collect (list name 15 t))
+              for length being each element of col-lengths
+              collect (list name
+                            (max (string-to-number length ) 4)
+                            t))
      nil)))
-
 
 ;; Need function to create tabulated-list-entries from the rows of df
 
@@ -154,7 +164,7 @@ data.frames and view it."
           (tabulated-list-format (make-header df-name))
           (tabulated-list-sort-key nil))
 
-      (setq tabulated-list-padding 2)
+      (setq tabulated-list-padding 1)
       (tabulate-data-frame-mode)
       (tabulated-list-init-header)
       (tabulated-list-print t))
