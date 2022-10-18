@@ -137,6 +137,7 @@ list of vectors: one vector for each row in DF-NAME."
   "Mode for inspecting data.frames in the R session."
   :group 'tabulate-data-frame)
 
+;;;###autoload
 (defun tabulate-data-frame (df-name)
   "Select a data.frame DF-NAME interactively from the list of
 data.frames and view it."
