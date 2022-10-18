@@ -42,9 +42,6 @@
   :group 'tabulate-data-frame
   :prefix "tabulate-data-frame-")
 
-(defvar viewer-buf-name "*R data.frame*"
-  "Buffer for R data.frame viewing")
-
 (defvar ess-command-buffer " *ess-command-output*"
   "Name of the ESS command output buffer, as it is defined in the
 ess-inf.el source code.")
@@ -105,7 +102,7 @@ spacing for the tabulated-list."
      (cl-loop for name being each element of header
               for length being each element of col-lengths
               collect (list name
-                            (max (string-to-number length ) 4)
+                            (max (string-to-number length) 4) ; columns can't be shorter than 4 chars
                             t))
      nil)))
 
@@ -158,7 +155,8 @@ data.frames and view it."
      (list
       (completing-read "data.frame> " (buffer-to-list ess-command-buffer)))))
 
-  (with-current-buffer (get-buffer-create viewer-buf-name)
+  (with-current-buffer (get-buffer-create
+                        (concat "*R data.frame: " df-name "*"))
 
     (let ((tabulated-list-entries (data-for-table df-name))
           (tabulated-list-format (make-header df-name))
