@@ -23,3 +23,6 @@ Install from Github via [straight.el](https://github.com/radian-software/straigh
 ```
 
 ![](pic.png)
+## Limitation
+
+`tabulate-data-frame` does not play nice with large data.frames

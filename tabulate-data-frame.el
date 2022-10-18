@@ -58,7 +58,7 @@ ess-inf.el source code.")
 put that in a buffer."
   (ess-command list-data-frames-cmd))
 
-(defun df-name-p (string)
+(defun bracket-text-p (string)
   "Match STRINGs like [1] or [15]."
   (string-match (rx (or "[" "]"))
                 string))
@@ -73,7 +73,7 @@ list of data.frame names."
             (mapcar
              #'(lambda (x) (replace-regexp-in-string (rx "\"") "" x)) ; remove quotes
              initial-list))
-      (cl-delete-if #'df-name-p initial-list))))
+      (cl-delete-if #'bracket-text-p initial-list))))
 
 
 (defun get-df-cmd (df-name)
@@ -112,7 +112,7 @@ spacing for the tabulated-list."
   "Read the print out of the data.frame DF-NAME and construct a
 list of vectors: one vector for each row in DF-NAME."
   (let ((cmd (concat
-              "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE)")))
+              "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = \"|\")")))
     (ess-force-buffer-current)
     (ess-command cmd)
     (with-current-buffer ess-command-buffer
@@ -120,7 +120,7 @@ list of vectors: one vector for each row in DF-NAME."
                collect (vconcat ; convert list to vector
                         (split-string ; split line on the space and remove newline
                          (thing-at-point 'line t) ; take each line of buffer
-                         " " nil (rx "\n"))
+                         "|" nil (rx "\n"))
                         nil)
                do (forward-line 1)))))
 
