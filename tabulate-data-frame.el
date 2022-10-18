@@ -43,16 +43,14 @@
   :prefix "tabulate-data-frame-")
 
 (defvar ess-command-buffer " *ess-command-output*"
-  "Name of the ESS command output buffer, as it is defined in the
-ess-inf.el source code.")
+  "Name of the ESS command output buffer.")
 
 (defvar list-data-frames-cmd
   "Filter(function(x) is.data.frame(get(x)), ls(envir = .GlobalEnv))"
   "R command to get a list of data.frames from the R global environment.")
 
 (defun get-data-frames ()
-  "Determine the list of data.frame names in the R .GlobalEnv and
-put that in a buffer."
+  "Determine the list of data.frame names in the R .GlobalEnv."
   (ess-command list-data-frames-cmd))
 
 (defun bracket-text-p (string)
@@ -61,7 +59,9 @@ put that in a buffer."
                 string))
 
 (defun buffer-to-list (buf)
-  "Convert BUF containing the data.frame names into a
+  "Buffer to list conversion helper function.
+
+Convert BUF containing the data.frame names into a
 list of data.frame names."
   (with-current-buffer buf
     (let ((initial-list (split-string
@@ -94,8 +94,13 @@ list of data.frame names."
     (buffer-to-list ess-command-buffer)))
 
 (defun make-header (df-name)
-  "Create the input to tabulated-list-format, the columns and
-spacing for the tabulated-list."
+  "Tabulated-data-frame helper function.
+
+Create the input to `tabulated-list-format', the columns and
+spacing for the tabulated-list.
+
+Tabulated-list-format is created dynamically depending on the
+form of DF-NAME in the R session."
   (let ((header (get-df-col-names-cmd df-name))
         (col-lengths (get-df-col-length-cmd df-name)))
     (vconcat
@@ -116,7 +121,9 @@ spacing for the tabulated-list."
     (buffer-to-list ess-command-buffer)))
 
 (defun get-df-data-cmd (df-name)
-  "Read the print out of the data.frame DF-NAME and construct a
+  "Tabulated-data-frame helper function.
+
+Read the print out of the data.frame DF-NAME and construct a
 list of vectors: one vector for each row in DF-NAME."
   (let ((cmd (concat
               "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = \"|\")")))
@@ -133,8 +140,7 @@ list of vectors: one vector for each row in DF-NAME."
 
 
 (defun data-for-table (df-name)
-  "Zip the row names and the data.frame data together for
-`tabulated-list-entries'."
+  "Extract info from DF-NAME for display."
   (let ((row-names (get-df-row-names-cmd df-name))
         (df-data (get-df-data-cmd df-name)))
     (cl-mapcar #'list row-names df-data)))
@@ -146,7 +152,9 @@ list of vectors: one vector for each row in DF-NAME."
 
 ;;;###autoload
 (defun tabulate-data-frame (df-name)
-  "Select a data.frame DF-NAME interactively from the list of
+  "Create a tabulated-data-frame.
+
+Select a data.frame DF-NAME interactively from the list of
 data.frames and view it."
 
   (interactive
