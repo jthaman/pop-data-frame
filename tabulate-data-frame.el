@@ -126,7 +126,7 @@ form of DF-NAME in the R session."
 Read the print out of the data.frame DF-NAME and construct a
 list of vectors: one vector for each row in DF-NAME."
   (let ((cmd (concat
-              "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = \"|\")")))
+              "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = \"|||\")")))
     (ess-force-buffer-current)
     (ess-command cmd)
     (with-current-buffer ess-command-buffer
@@ -134,7 +134,7 @@ list of vectors: one vector for each row in DF-NAME."
                collect (vconcat ; convert list to vector
                         (split-string ; split line on the space and remove newline
                          (thing-at-point 'line t) ; take each line of buffer
-                         "|" nil (rx "\n"))
+                         "|||" nil (rx "\n"))
                         nil)
                do (forward-line 1)))))
 
