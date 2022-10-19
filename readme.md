@@ -17,7 +17,12 @@ Install from Github via [straight.el](https://github.com/radian-software/straigh
 
 ```emacs-lisp
 (use-package tabulate-data-frame
-  :straight (tabulate-data-frame :host github :repo "jthaman/tabulate-data-frame"))
+  :defer t
+  :after ess-r-mode
+  :straight (:host github :repo "jthaman/tabulate-data-frame"))
 ```
 
 ![](pic.png)
+## Limitation
+
+`tabulate-data-frame` does not play nice with large data.frames

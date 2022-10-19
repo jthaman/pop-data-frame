@@ -101,6 +101,13 @@ list of data.frame names."
     (ess-command cmd)
     (buffer-to-list ess-command-buffer)))
 
+(defun get-df-col-length-cmd (df-name)
+  "Return a list of the column names of DF-NAME."
+  (let ((cmd (concat "c(apply(" df-name ", 2, function(x) max(nchar(x))), use.names = FALSE)")))
+    (ess-force-buffer-current)
+    (ess-command cmd)
+    (buffer-to-list ess-command-buffer)))
+
 (defun make-header (df-name)
   "Tabulated-data-frame helper function.
 
