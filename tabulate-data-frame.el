@@ -6,7 +6,7 @@
 ;; Maintainer: John Haman <mail@johnhaman.org>
 ;; Created: 2022
 ;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (ess "19.03"))
+;; Package-Requires: ((emacs "27.1") (ess "18.10.2"))
 ;; Homepage: https://github.com/jthaman/tabulate-data-frame
 
 ;; This file is not part of GNU Emacs.
