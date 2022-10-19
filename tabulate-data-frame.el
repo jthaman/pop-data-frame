@@ -30,6 +30,10 @@
 ;; Experimental library to display R data.frames in a new buffer using
 ;; `tabulated-list-mode'.
 
+;;; Todo:
+
+;; - Make it work in more environments.
+
 ;;; Code:
 
 (eval-when-compile
@@ -42,29 +46,26 @@
   :group 'tabulate-data-frame
   :prefix "tabulate-data-frame-")
 
-(defvar viewer-buf-name "*R data.frame*"
-  "Buffer for R data.frame viewing")
-
 (defvar ess-command-buffer " *ess-command-output*"
-  "Name of the ESS command output buffer, as it is defined in the
-ess-inf.el source code.")
+  "Name of the ESS command output buffer.")
 
 (defvar list-data-frames-cmd
   "Filter(function(x) is.data.frame(get(x)), ls(envir = .GlobalEnv))"
   "R command to get a list of data.frames from the R global environment.")
 
 (defun get-data-frames ()
-  "Determine the list of data.frame names in the R .GlobalEnv and
-put that in a buffer."
+  "Determine the list of data.frame names in the R .GlobalEnv."
   (ess-command list-data-frames-cmd))
 
-(defun df-name-p (string)
+(defun bracket-text-p (string)
   "Match STRINGs like [1] or [15]."
   (string-match (rx (or "[" "]"))
                 string))
 
 (defun buffer-to-list (buf)
-  "Convert BUF containing the data.frame names into a
+  "Buffer to list conversion helper function.
+
+Convert BUF containing the data.frame names into a
 list of data.frame names."
   (with-current-buffer buf
     (let ((initial-list (split-string
@@ -73,7 +74,7 @@ list of data.frame names."
             (mapcar
              #'(lambda (x) (replace-regexp-in-string (rx "\"") "" x)) ; remove quotes
              initial-list))
-      (cl-delete-if #'df-name-p initial-list))))
+      (cl-delete-if #'bracket-text-p initial-list))))
 
 
 (defun get-df-cmd (df-name)
@@ -85,34 +86,57 @@ list of data.frame names."
 (defun get-df-col-names-cmd (df-name)
   "Return a list of the column names of DF-NAME."
   (let ((cmd (concat "colnames(" df-name ")")))
+
+    (setq-local ess-dialect "R")
+    (ess-force-buffer-current)
+    (ess-command cmd)
+    (buffer-to-list ess-command-buffer)))
+
+(defun get-df-col-length-cmd (df-name)
+  "Return a list of the column names of DF-NAME."
+  (let ((cmd (concat "c(apply(" df-name ", 2, function(x) max(nchar(x))), use.names = FALSE)")))
+
+    (setq-local ess-dialect "R")
     (ess-force-buffer-current)
     (ess-command cmd)
     (buffer-to-list ess-command-buffer)))
 
 (defun make-header (df-name)
-  "Create the input to tabulated-list-format, the columns and
-spacing for the tabulated-list."
-  (let ((header (get-df-col-names-cmd df-name)))
+  "Tabulated-data-frame helper function.
+
+Create the input to `tabulated-list-format', the columns and
+spacing for the tabulated-list.
+
+Tabulated-list-format is created dynamically depending on the
+form of DF-NAME in the R session."
+  (let ((header (get-df-col-names-cmd df-name))
+        (col-lengths (get-df-col-length-cmd df-name)))
     (vconcat
      (cl-loop for name being each element of header
-              collect (list name 15 t))
+              for length being each element of col-lengths
+              collect (list name
+                            (max (string-to-number length) 4) ; columns can't be shorter than 4 chars
+                            t))
      nil)))
-
 
 ;; Need function to create tabulated-list-entries from the rows of df
 
 (defun get-df-row-names-cmd (df-name)
   "Return a list of the row names of DF-NAME."
   (let ((cmd (concat "rownames(" df-name ")")))
+    (setq-local ess-dialect "R")
     (ess-force-buffer-current)
     (ess-command cmd)
     (buffer-to-list ess-command-buffer)))
 
 (defun get-df-data-cmd (df-name)
-  "Read the print out of the data.frame DF-NAME and construct a
+  "Tabulated-data-frame helper function.
+
+Read the print out of the data.frame DF-NAME and construct a
 list of vectors: one vector for each row in DF-NAME."
   (let ((cmd (concat
-              "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE)")))
+              "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = \"|||\")")))
+    (setq-local ess-dialect "R")
     (ess-force-buffer-current)
     (ess-command cmd)
     (with-current-buffer ess-command-buffer
@@ -120,14 +144,13 @@ list of vectors: one vector for each row in DF-NAME."
                collect (vconcat ; convert list to vector
                         (split-string ; split line on the space and remove newline
                          (thing-at-point 'line t) ; take each line of buffer
-                         " " nil (rx "\n"))
+                         "|||" nil (rx "\n"))
                         nil)
-               do (forward-line 1)))))
+               do (forward-line)))))
 
 
 (defun data-for-table (df-name)
-  "Zip the row names and the data.frame data together for
-`tabulated-list-entries'."
+  "Extract info from DF-NAME for display."
   (let ((row-names (get-df-row-names-cmd df-name))
         (df-data (get-df-data-cmd df-name)))
     (cl-mapcar #'list row-names df-data)))
@@ -139,7 +162,9 @@ list of vectors: one vector for each row in DF-NAME."
 
 ;;;###autoload
 (defun tabulate-data-frame (df-name)
-  "Select a data.frame DF-NAME interactively from the list of
+  "Create a tabulated-data-frame.
+
+Select a data.frame DF-NAME interactively from the list of
 data.frames and view it."
 
   (interactive
@@ -148,13 +173,14 @@ data.frames and view it."
      (list
       (completing-read "data.frame> " (buffer-to-list ess-command-buffer)))))
 
-  (with-current-buffer (get-buffer-create viewer-buf-name)
+  (with-current-buffer (get-buffer-create
+                        (concat "*R data.frame: " df-name "*"))
 
     (let ((tabulated-list-entries (data-for-table df-name))
           (tabulated-list-format (make-header df-name))
           (tabulated-list-sort-key nil))
 
-      (setq tabulated-list-padding 2)
+      (setq tabulated-list-padding 1)
       (tabulate-data-frame-mode)
       (tabulated-list-init-header)
       (tabulated-list-print t))
