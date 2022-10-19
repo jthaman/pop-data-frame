@@ -143,7 +143,7 @@ Read the print out of the data.frame DF-NAME and construct a
 list of vectors: one vector for each row in DF-NAME."
   (let ((cmd (concat
               "write.table(" df-name ", row.names = FALSE, col.names = FALSE, quote = FALSE, sep = \"|||\")")))
-    (setq-local ess-dialect "R")
+    (setq-local ess-dialect "R") ; test to try to remove dialect check
     (ess-force-buffer-current)
     (ess-command cmd)
     (with-current-buffer ess-command-buffer
