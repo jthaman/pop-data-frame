@@ -27,11 +27,12 @@
 
 ;;; Commentary:
 
+;; Quickly move data-frames from R into excel for visual inspection.
+
 ;;; Todo:
 
 ;; - Make it work in more environments.
 
-(number-to-string (random t))
 
 ;;; Code:
 
@@ -51,6 +52,11 @@
 (defvar list-data-frames-cmd
   "Filter(function(x) is.data.frame(get(x)), ls(envir = .GlobalEnv))"
   "R command to get a list of data.frames from the R global environment.")
+
+(defun bracket-text-p (string)
+  "Match STRINGs like [1] or [15]."
+  (string-match (rx (or "[" "]"))
+                string))
 
 (defun buffer-to-list (buf)
   "Buffer to list conversion helper function.
