@@ -27,7 +27,7 @@
 
 ;;; Commentary:
 
-;; Quickly move data-frames from R into excel for visual inspection.
+;; Quickly move data-frames from R into excel/libreoffice for visual inspection.
 
 ;;; Todo:
 
