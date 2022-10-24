@@ -1,4 +1,4 @@
-;;;; tabulate-data-frame.el --- Tabulated list view for data.frames in ESS-R sessions  -*- lexical-binding: t; -*-
+;;;; pop-data-frame.el --- Pop a data.frame from your R session into Excel/Libreoffice  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2022 Free Software Foundation, Inc.
 
@@ -7,7 +7,7 @@
 ;; Created: 2022
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "27.1") (ess "18.10.2") (consult "0.15"))
-;; Homepage: https://github.com/jthaman/tabulate-data-frame
+;; Homepage: https://github.com/jthaman/pop-data-frame
 
 ;; This file is not part of GNU Emacs.
 
@@ -31,20 +31,12 @@
 
 ;;; Todo:
 
-;; - Make it work in more environments.
-
-
 ;;; Code:
 
 (eval-when-compile
   (require 'cl-lib))
 (require 'consult)
 (require 'ess-r-mode)
-
-(defgroup tabulate-data-frame ()
-  "Customization group for Tabulate Data Frame."
-  :group 'tabulate-data-frame
-  :prefix "tabulate-data-frame-")
 
 (defvar ess-command-buffer " *ess-command-output*"
   "Name of the ESS command output buffer.")
@@ -87,8 +79,8 @@ list of data.frame names."
    (concat "write.csv(" df-name ",\"" file "\")")))
 
 ;;;###autoload
-(defun tabulate-data-frame (df-name)
-  "Create a tabulated-data-frame.
+(defun pop-data-frame (df-name)
+  "Pop a data.frame into a spreadsheet program.
 
 Select a data.frame DF-NAME interactively from the list of
 data.frames and view it."
@@ -103,6 +95,6 @@ data.frames and view it."
     (write-temp-data-frame df-name file)
     (consult-file-externally file)))
 
-(provide 'tabulate-data-frame)
+(provide 'pop-data-frame)
 
-;;; tabulate-data-frame.el ends here
+;;; pop-data-frame.el ends here
