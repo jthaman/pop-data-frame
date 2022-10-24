@@ -42,7 +42,7 @@
   "Name of the ESS command output buffer.")
 
 (defvar list-data-frames-cmd
-  "Filter(function(x) is.data.frame(get(x)), ls(envir = .GlobalEnv))"
+  "ifelse(identical(Filter(function(x) is.data.frame(get(x)), ls(envir = .GlobalEnv)), character(0)),\"\", Filter(function(x) is.data.frame(get(x)), ls(envir = .GlobalEnv)))"
   "R command to get a list of data.frames from the R global environment.")
 
 (defun bracket-text-p (string)
@@ -60,7 +60,9 @@ list of data.frame names."
                          (buffer-substring (point-min) (point-max)))))
       (setq initial-list
             (mapcar
-             #'(lambda (x) (replace-regexp-in-string (rx "\"") "" x)) ; remove quotes
+             #'(lambda (x)
+                 (replace-regexp-in-string
+                  (rx "\"") "" x)) ; remove quotes
              initial-list))
       (cl-delete-if #'bracket-text-p initial-list))))
 
