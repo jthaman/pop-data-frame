@@ -35,7 +35,7 @@
 
 (eval-when-compile
   (require 'cl-lib))
-(require 'consult)
+(require 'embark)
 (require 'ess-r-mode)
 
 (defvar ess-command-buffer " *ess-command-output*"
@@ -95,7 +95,7 @@ data.frames and view it."
 
   (let ((file (df-file-name df-name)))
     (write-temp-data-frame df-name file)
-    (consult-file-externally file)))
+    (embark-open-externally file)))
 
 (provide 'pop-data-frame)
 
