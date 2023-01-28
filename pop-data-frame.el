@@ -37,6 +37,7 @@
   (require 'cl-lib))
 (require 'embark)
 (require 'ess-r-mode)
+(require 'browse-url)
 
 (defvar ess-command-buffer " *ess-command-output*"
   "Name of the ESS command output buffer.")
